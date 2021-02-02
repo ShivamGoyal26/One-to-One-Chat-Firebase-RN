@@ -1,22 +1,11 @@
 import React from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import { View, Text } from 'react-native';
+import Providers from './Navigation/index';
 
 const App = props => {
   return(
-    <View>
-      <Text>
-        This is the main Screen
-      </Text>
-    </View>
+  <Providers />
   )
 }
-
-styles = StyleSheet.create({
-    screen: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: "center",
-    }
-});
 
 export default App;
