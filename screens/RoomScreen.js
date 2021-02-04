@@ -8,29 +8,27 @@ import firestore from '@react-native-firebase/firestore';
 
 export default function RoomScreen({ route }) {
 
-    // function renderSystemMessage(props) {
-    //     return (
-    //         <SystemMessage
-    //             {...props}
-    //             wrapperStyle={styles.systemMessageWrapper}
-    //             textStyle={styles.systemMessageText}
-    //         />
-    //     );
-    // }
-
     const { user } = useContext(AuthContext);
     const currentUser = user.toJSON();
-    const thread = route.params.thread;
+    const thread = route.params.item;
+    const oppositeUserId = route.params.item._id;
 
-    const [messages, setMessages] = useState([]);
+    console.log("this is the id of the opposite user");
+    console.log(oppositeUserId);
 
-    async function handleSend(messages) {
-        const text = messages[0].text;
+    const [messages, setMessages] = useState([
+    ]);
+
+    async function handleSend(message) {
+
+        var text = message[0].text;
 
         await firestore()
-            .collection('THREADS')
-            .doc(thread._id)
-            .collection('MESSAGES')
+            .collection('Chats')
+            .doc(currentUser.uid)
+            .collection('AllChatUsers')
+            .doc(oppositeUserId)
+            .collection('Chat')
             .add({
                 text,
                 createdAt: new Date().getTime(),
@@ -40,123 +38,47 @@ export default function RoomScreen({ route }) {
                 }
             });
 
-        await firestore()
-            .collection('THREADS')
-            .doc(thread._id)
-            .set(
-                {
-                    latestMessage: {
-                        text,
-                        createdAt: new Date().getTime()
-                    }
-                },
-                { merge: true }
-            );
     }
 
 
-
-    // useEffect(() => {
-    //     console.log({ user });
-    // }, []);
 
     useEffect(() => {
-        const messagesListener = firestore()
-            .collection('THREADS')
-            .doc(thread._id)
-            .collection('MESSAGES')
-            .orderBy('createdAt', 'desc')
-            .onSnapshot(querySnapshot => {
-                const messages = querySnapshot.docs.map(doc => {
-                    const firebaseData = doc.data();
 
-                    const data = {
-                        _id: doc.id,
-                        // text: '',
-                        // createdAt: new Date().getTime(),
-                        ...firebaseData
-                    };
+    //    firestore()
+    //     .collection('Chats')
+    //     .doc(currentUser.uid)
+    //     .collection('Chat')
+    //     .then(querySnapshot => {
+    //         console.log('Total Users This is the data');
+    //         querySnapshot.forEach(documentSnapshot => {
+    //             console.log('User ID: ', documentSnapshot.id, documentSnapshot.data());
+    //           });
+    //     })
 
-                    if (!firebaseData.system) {
-                        data.user = {
-                            ...firebaseData.user,
-                            name: firebaseData.user.email
-                        };
-                    }
+        setMessages([
+            {
+                _id: 1,
+                text: 'Hello developer',
+                createdAt: new Date(),
+                user: {
+                    _id: 2,
+                    name: 'React Native',
+                    avatar: 'https://placeimg.com/140/140/any',
+                },
+            },
+        ])
+    }, [])
 
-                    return data;
-                });
 
-                setMessages(messages);
-            });
-
-        return () => messagesListener();
-    }, []);
-
-    function renderLoading() {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size='large' color='#6646ee' />
-            </View>
-        );
-    }
-
-    function scrollToBottomComponent() {
-        return (
-            <View style={styles.bottomComponentContainer}>
-                <AntDesign name='downcircleo' size={30} color='#6646ee' />
-            </View>
-        );
-    }
-
-    function renderSend(props) {
-        return (
-            <Send {...props}>
-                <View style={styles.sendingContainer}>
-                    <Ionicons name='send' size={28} color='#6646ee' />
-                </View>
-            </Send>
-        );
-    }
-
-    function renderBubble(props) {
-        return (
-            // Step 3: return the component
-            <Bubble
-                {...props}
-                wrapperStyle={{
-                    right: {
-                        // Here is the color change
-                        backgroundColor: '#6646ee',
-                    }
-                }}
-                textStyle={{
-                    right: {
-                        color: '#fff'
-                    }
-                }}
-            />
-        );
-    }
-
-  
 
     return (
         <GiftedChat
             messages={messages}
-            onSend={handleSend}
-            // user={{ _id: 1, name: 'User Test' }}
+            onSend={message => handleSend(message)}
             user={{ _id: currentUser.uid }}
-            renderBubble={renderBubble}
             placeholder="Type a message..."
             showUserAvatar={true}
             showAvatarForEveryMessage={true}
-            alwaysShowSend
-            renderSend={renderSend}
-            scrollToBottom
-            scrollToBottomComponent={scrollToBottomComponent}
-            renderLoading={renderLoading}
-            // renderSystemMessage={renderSystemMessage}
         />
     );
 }
@@ -179,5 +101,5 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: 'black',
         fontWeight: 'bold'
-      },
+    },
 });

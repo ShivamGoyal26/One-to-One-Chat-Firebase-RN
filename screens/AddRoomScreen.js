@@ -1,92 +1,82 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
-import FormButton from '../components/FormButton';
-import FormInput from '../components/FormInput';
-import { IconButton, Title } from 'react-native-paper';
+
+import React, { useEffect, useState, useContext  } from 'react';
+import { View, StyleSheet, FlatList, Image, Text, TouchableOpacity } from 'react-native';
+import { Divider } from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
-
-
+import Loading from '../components/Loading';
+import { AuthContext } from '../Navigation/AuthProvider';
 
 
 export default function AddRoomScreen({ navigation }) {
-
-    const [roomName, setRoomName] = useState('');
-
-
-    function handleButtonPress() {
-        if (roomName.length > 0) {
-          firestore()
-            .collection('THREADS')
-            .add({
-              name: roomName,
-              latestMessage: {
-                text: `You have joined the room ${roomName}.`,
-                createdAt: new Date().getTime()
-              }
-            })
-            .then(docRef => {
-              docRef.collection('MESSAGES').add({
-                text: `You have joined the room ${roomName}.`,
-                createdAt: new Date().getTime(),
-                system: true
-              });
-              navigation.navigate('Home');
-            });
-        }
-      }
-
+  
+    const [users, setUsers] = useState(null);
+    const [loading, setLoading] = useState(true);
+  
+    useEffect(() => {
+      const unsubscribe = firestore()
+        .collection('Users')
+        .onSnapshot((querySnapshot) => {
+          const data = querySnapshot.docs.map((documentSnapshot) => {
+            return {
+              _id: documentSnapshot.id,
+              ...documentSnapshot.data(),
+            };
+          });
+          setUsers(data);
+  
+          if (loading) {
+            setLoading(false);
+          }
+        });
+  
+      return () => unsubscribe();
+    }, []);
+  
+    if (loading) {
+      return <Loading />;
+    }
+  
     return (
-        <View style={styles.rootContainer}>
-            <View style={styles.closeButtonContainer}>
-                <IconButton
-                    icon='close-circle'
-                    size={36}
-                    color='#6646ee'
-                    onPress={() => navigation.goBack()}
-                />
-            </View>
-            <View style={styles.innerContainer}>
-                <Title style={styles.title}>Create a new chat room</Title>
-                <FormInput
-                    labelName='Room Name'
-                    value={roomName}
-                    onChangeText={(text) => setRoomName(text)}
-                    clearButtonMode='while-editing'
-                />
-                <FormButton
-                    backgroundColor='black'
-                    title='Create'
-                    modeValue='contained'
-                    labelStyle={styles.buttonLabel}
-                    onPress={() => handleButtonPress()}
-                    disabled={roomName.length === 0}
-                />
-            </View>
-        </View>
-    );
-}
+      <View style={styles.container}>
+        <FlatList
+          data={users}
+          keyExtractor={(item) => item._id}
+          ItemSeparatorComponent={() => <Divider style={{ backgroundColor: 'black' }} />}
+          renderItem={(item) => {
+            return (
+              <TouchableOpacity onPress={() => { navigation.navigate('RoomChat', { item: item.item}) }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 10 }}>
+                  <Image
+                    source={{
+                      uri: 'https://raw.githubusercontent.com/AboutReact/sampleresource/master/old_logo.png'
+                    }}
+                    style={{ width: 40, height: 40, borderRadius: 400 / 2 }}
+                  />
+                  <View style={{ padding: 10, width: '100%', }}>
+                    <Text style={{ color: 'black', fontSize: 20 }}>{item.item.name}</Text>
+                    <Text style={{ fontSize: 12, color: 'grey' }}>{item.item.email}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+  
+            )
+          }}
+        />
+      </View>
+    )
+  }
 
-const styles = StyleSheet.create({
-    rootContainer: {
-        flex: 1,
+  const styles = StyleSheet.create({
+    container: {
+      backgroundColor: '#f5f5f5',
+      flex: 1,
     },
-    closeButtonContainer: {
-        position: 'absolute',
-        top: 30,
-        right: 0,
-        zIndex: 1,
+    listTitle: {
+      fontSize: 22,
+      color: 'black'
     },
-    innerContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+    listDescription: {
+      fontSize: 16,
+      color: 'black'
     },
-    title: {
-        fontSize: 24,
-        marginBottom: 10,
-        color: 'black',
-    },
-    buttonLabel: {
-        fontSize: 22,
-    },
-});
+  });

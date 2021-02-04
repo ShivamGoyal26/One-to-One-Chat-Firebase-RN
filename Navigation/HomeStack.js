@@ -4,7 +4,7 @@ import HomeScreen from '../screens/HomeScreen';
 import AddRoomScreen from '../screens/AddRoomScreen';
 import Entypo from 'react-native-vector-icons/Entypo';
 import RoomScreen from '../screens/RoomScreen';
-import { View } from 'react-native';
+import { View, Text } from 'react-native';
 import {AuthContext} from './AuthProvider';
 
 
@@ -54,7 +54,12 @@ function ChatApp() {
       <ChatAppStack.Screen name='Room'
         component={RoomScreen}
         options={({ route }) => ({
-          title: route.params.thread.name
+          // title: route.params.name,
+          title: route.params.item.name,
+          // headerTitle: 'india'
+          // headerRight: () => {
+          //   <Text style={{color: 'white', fontSize: 20}}>India</Text>
+          // }
         })}
       />
     </ChatAppStack.Navigator>
@@ -66,6 +71,10 @@ export default function HomeStack() {
     <ModalStack.Navigator mode='modal' headerMode='none'>
       <ModalStack.Screen name='ChatApp' component={ChatApp} />
       <ModalStack.Screen name='AddRoom' component={AddRoomScreen} />
+      <ModalStack.Screen 
+      name="RoomChat" 
+      component={RoomScreen}
+       />
     </ModalStack.Navigator>
   );
 }

@@ -5,32 +5,44 @@ import { AuthContext } from '../Navigation/AuthProvider';
 import FormInput from '../components/FormInput';
 import FormButton from '../components/FormButton';
 import firestore from '@react-native-firebase/firestore'
+// import { AuthContext } from '../Navigation/AuthProvider';
 
 export default function SignupScreen({ navigation }) {
 
-  const { register } = useContext(AuthContext);
+    // const { user } = useContext(AuthContext);
+
+    var date = new Date().getDate(); //Current Date
+    var month = new Date().getMonth() + 1; //Current Month
+    var year = new Date().getFullYear(); //Current Year
+    var hours = new Date().getHours(); //Current Hours
+    var min = new Date().getMinutes();
+
+    var lastSeen = hours + ':' + min + ' hour';
+    var currentDate = date + '/' + month + '/' + year;
+
+  const {user, register } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
 
-  function AddUser() {
-    // if (roomName.length > 0) {
-      firestore()
-        .collection('Users')
-        .add({
+  function addUser() {
+    const unsubscribe =   firestore()
+        .collection('Users').doc()
+        .set({  
           name: name,
-          createdAt: new Date().getTime(),
+          createdAt: currentDate,
           email: email,
+          lastSeen: lastSeen, 
         })
         // .then(docRef => {
-        //   docRef.collection('MESSAGES').add({
-        //     text: `You have joined the room ${roomName}.`,
-        //     createdAt: new Date().getTime(),
-        //     system: true
+        //   docRef.collection('Chats').add({
+        //     data: 'Start Chatting Now!'
         //   });
-        //   navigation.navigate('Home');
+        
         // });
-    // }
+    
+
+    return () => unsubscribe();
   }
 
   return (
@@ -59,9 +71,9 @@ export default function SignupScreen({ navigation }) {
         title='Signup'
         modeValue='contained'
         labelStyle={styles.loginButtonLabel}
-        onPress={() => {
-            register(email, password);
-            AddUser();
+        onPress={async () => {
+           await register(email, password);
+            addUser();
 
         } }
       />
@@ -72,13 +84,6 @@ export default function SignupScreen({ navigation }) {
           labelStyle={styles.navButtonText}
           onPress={() => navigation.goBack()}
         />
-      {/* <IconButton
-        icon='home'
-        size={30}
-        style={styles.navButton}
-        color='#6646ee'
-        onPress={() => navigation.goBack()}
-      /> */}
     </View>
   );
 }
