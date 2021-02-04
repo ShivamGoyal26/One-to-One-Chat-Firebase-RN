@@ -18,10 +18,7 @@ export default function HomeScreen({ navigation }) {
       .collection('Users')
       .onSnapshot((querySnapshot) => {
         const data = querySnapshot.docs.map((documentSnapshot) => {
-          console.log("These are uid of the doc users")
-          console.log(documentSnapshot.id);
           return {
-
             _id: documentSnapshot.id,
             ...documentSnapshot.data(),
           };
@@ -42,9 +39,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* <View style={{padding: 20}}> */}
       <Text style={{ fontSize: 20, alignSelf: 'center' }}>{user.email}</Text>
-      {/* </View> */}
       <FlatList
         data={users}
         keyExtractor={(item) => item._id}
