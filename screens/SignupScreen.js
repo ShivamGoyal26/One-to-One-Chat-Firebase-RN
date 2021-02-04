@@ -5,42 +5,32 @@ import { AuthContext } from '../Navigation/AuthProvider';
 import FormInput from '../components/FormInput';
 import FormButton from '../components/FormButton';
 import firestore from '@react-native-firebase/firestore'
-// import { AuthContext } from '../Navigation/AuthProvider';
 
 export default function SignupScreen({ navigation }) {
 
-    // const { user } = useContext(AuthContext);
+  var date = new Date().getDate();
+  var month = new Date().getMonth() + 1;
+  var year = new Date().getFullYear();
+  var hours = new Date().getHours();
+  var min = new Date().getMinutes();
 
-    var date = new Date().getDate(); //Current Date
-    var month = new Date().getMonth() + 1; //Current Month
-    var year = new Date().getFullYear(); //Current Year
-    var hours = new Date().getHours(); //Current Hours
-    var min = new Date().getMinutes();
+  var lastSeen = hours + ':' + min + ' hour';
+  var currentDate = date + '/' + month + '/' + year;
 
-    var lastSeen = hours + ':' + min + ' hour';
-    var currentDate = date + '/' + month + '/' + year;
-
-  const {user, register } = useContext(AuthContext);
+  const { register } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
 
   function addUser() {
-    const unsubscribe =   firestore()
-        .collection('Users').doc()
-        .set({  
-          name: name,
-          createdAt: currentDate,
-          email: email,
-          lastSeen: lastSeen, 
-        })
-        // .then(docRef => {
-        //   docRef.collection('Chats').add({
-        //     data: 'Start Chatting Now!'
-        //   });
-        
-        // });
-    
+    const unsubscribe = firestore()
+      .collection('Users').doc()
+      .set({
+        name: name,
+        createdAt: currentDate,
+        email: email,
+        lastSeen: lastSeen,
+      })
 
     return () => unsubscribe();
   }
@@ -72,18 +62,18 @@ export default function SignupScreen({ navigation }) {
         modeValue='contained'
         labelStyle={styles.loginButtonLabel}
         onPress={async () => {
-           await register(email, password);
-            addUser();
+          await register(email, password);
+          addUser();
 
-        } }
+        }}
       />
       <FormButton
-          title='Already Registered? Login here'
-          modeValue='text'
-          uppercase={false}
-          labelStyle={styles.navButtonText}
-          onPress={() => navigation.goBack()}
-        />
+        title='Already Registered? Login here'
+        modeValue='text'
+        uppercase={false}
+        labelStyle={styles.navButtonText}
+        onPress={() => navigation.goBack()}
+      />
     </View>
   );
 }

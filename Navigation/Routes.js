@@ -11,7 +11,6 @@ export default function Routes() {
   const [loading, setLoading] = useState(true);
   const [initializing, setInitializing] = useState(true);
 
-  // Handle user state changes
   function onAuthStateChanged(user) {
     setUser(user);
     if (initializing) setInitializing(false);
@@ -20,7 +19,7 @@ export default function Routes() {
 
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    return subscriber; // unsubscribe on unmount
+    return subscriber;
   }, []);
 
   if (loading) {
