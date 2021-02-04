@@ -1,8 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
-import { GiftedChat, Bubble, Send, SystemMessage } from 'react-native-gifted-chat';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import { StyleSheet } from 'react-native';
+import { GiftedChat } from 'react-native-gifted-chat';
 import { AuthContext } from '../Navigation/AuthProvider';
 import firestore from '@react-native-firebase/firestore';
 
@@ -10,11 +8,8 @@ export default function RoomScreen({ route }) {
 
     const { user } = useContext(AuthContext);
     const currentUser = user.toJSON();
-    const thread = route.params.item;
-    const oppositeUserId = route.params.item._id;
+    const oppositeUserId = route.params.item.email;
 
-    console.log("this is the id of the opposite user");
-    console.log(oppositeUserId);
 
     const [messages, setMessages] = useState([
     ]);
@@ -23,11 +18,15 @@ export default function RoomScreen({ route }) {
 
         var text = message[0].text;
 
+        const array1 = [currentUser.email, oppositeUserId]
+        array1.sort()
+        console.log(array1[0] + array1[1])
+        newId = array1[0] + array1[1];
+        console.log(newId)
+
         await firestore()
             .collection('Chats')
-            .doc(currentUser.uid)
-            .collection('AllChatUsers')
-            .doc(oppositeUserId)
+            .doc(newId)
             .collection('Chat')
             .add({
                 text,
@@ -36,39 +35,45 @@ export default function RoomScreen({ route }) {
                     _id: currentUser.uid,
                     email: currentUser.email
                 }
-            });
+            })
 
     }
 
-
-
     useEffect(() => {
 
-    //    firestore()
-    //     .collection('Chats')
-    //     .doc(currentUser.uid)
-    //     .collection('Chat')
-    //     .then(querySnapshot => {
-    //         console.log('Total Users This is the data');
-    //         querySnapshot.forEach(documentSnapshot => {
-    //             console.log('User ID: ', documentSnapshot.id, documentSnapshot.data());
-    //           });
-    //     })
+        const array1 = [currentUser.email, oppositeUserId]
+        array1.sort()
+        newId = array1[0] + array1[1];
 
-        setMessages([
-            {
-                _id: 1,
-                text: 'Hello developer',
-                createdAt: new Date(),
-                user: {
-                    _id: 2,
-                    name: 'React Native',
-                    avatar: 'https://placeimg.com/140/140/any',
-                },
-            },
-        ])
-    }, [])
+        const messagesListener = firestore()
+            .collection('Chats')
+            .doc(newId)
+            .collection('Chat')
+            .orderBy('createdAt', 'desc')
+            .onSnapshot(querySnapshot => {
+                const messages = querySnapshot.docs.map(doc => {
+                    const firebaseData = doc.data();
 
+                    const data = {
+                        _id: doc.id,
+                        ...firebaseData
+                    };
+
+                    if (!firebaseData.system) {
+                        data.user = {
+                            ...firebaseData.user,
+                            name: firebaseData.user.email
+                        };
+                    }
+
+                    return data;
+                });
+
+                setMessages(messages);
+            });
+
+        return () => messagesListener();
+    }, []);
 
 
     return (
@@ -103,3 +108,4 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
 });
+

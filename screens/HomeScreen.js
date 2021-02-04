@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext  } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { View, StyleSheet, FlatList, Image, Text, TouchableOpacity } from 'react-native';
 import { Divider } from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
@@ -21,7 +21,7 @@ export default function HomeScreen({ navigation }) {
           console.log("These are uid of the doc users")
           console.log(documentSnapshot.id);
           return {
-          
+
             _id: documentSnapshot.id,
             ...documentSnapshot.data(),
           };
@@ -42,16 +42,16 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-    {/* <View style={{padding: 20}}> */}
-    <Text style={{fontSize: 20, alignSelf: 'center'}}>{user.email}</Text>
-    {/* </View> */}
+      {/* <View style={{padding: 20}}> */}
+      <Text style={{ fontSize: 20, alignSelf: 'center' }}>{user.email}</Text>
+      {/* </View> */}
       <FlatList
         data={users}
         keyExtractor={(item) => item._id}
         ItemSeparatorComponent={() => <Divider style={{ backgroundColor: 'black' }} />}
         renderItem={(item) => {
           return (
-            <TouchableOpacity onPress={() => { navigation.navigate('Room', { item: item.item}) }}>
+            <TouchableOpacity onPress={() => { navigation.navigate('Room', { item: item.item }) }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 10 }}>
                 <Image
                   source={{
