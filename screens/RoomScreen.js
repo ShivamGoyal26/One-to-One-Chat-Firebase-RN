@@ -1,18 +1,58 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { StyleSheet } from 'react-native';
-import { GiftedChat } from 'react-native-gifted-chat';
+import { StyleSheet, View } from 'react-native';
+import { GiftedChat, Composer } from 'react-native-gifted-chat';
 import { AuthContext } from '../Navigation/AuthProvider';
 import firestore from '@react-native-firebase/firestore';
 
+import ImagePicker from 'react-native-image-picker';
+
 export default function RoomScreen({ route }) {
+
+    // This is for the image 
+
+    const [image, setImage] = useState(null);
+    const [transferred, setTransferred] = useState(0);
+    const [uploading, setUploading] = useState(false);
+
+    // This is the for the message 
 
     const { user } = useContext(AuthContext);
     const currentUser = user.toJSON();
     const oppositeUserId = route.params.item.email;
 
 
-    const [messages, setMessages] = useState([
-    ]);
+    const [messages, setMessages] = useState(null);
+
+    // renderComposer = props => {
+    //     return (
+    //       <View style={{flexDirection: 'row'}}>
+    //         <Composer {...props} />
+    //         <CustomImageButton />
+    //         <CustomAttachButton />
+    //       </View>
+    //     );
+    //   }
+
+    async function addImage(image) {
+        const array1 = [currentUser.email, oppositeUserId]
+        array1.sort()
+        newId = array1[0] + array1[1];
+
+        await firestore()
+        .collection('Chats')
+        .doc(newId)
+        .collection('Chat')
+        .add(
+            {
+                image,
+                createdAt: new Date().getTime(),
+                user:{
+                    _id: currentUser.uid,
+                    email: currentUser.email,
+                }
+            }
+        )
+    }
 
     async function handleSend(message) {
 
@@ -20,9 +60,7 @@ export default function RoomScreen({ route }) {
 
         const array1 = [currentUser.email, oppositeUserId]
         array1.sort()
-        console.log(array1[0] + array1[1])
         newId = array1[0] + array1[1];
-        console.log(newId)
 
         await firestore()
             .collection('Chats')
@@ -33,7 +71,7 @@ export default function RoomScreen({ route }) {
                 createdAt: new Date().getTime(),
                 user: {
                     _id: currentUser.uid,
-                    email: currentUser.email
+                    email: currentUser.email,
                 }
             })
 
@@ -84,6 +122,7 @@ export default function RoomScreen({ route }) {
             placeholder="Type a message..."
             showUserAvatar={true}
             showAvatarForEveryMessage={true}
+            // renderComposer={this.renderComposer}
         />
     );
 }
