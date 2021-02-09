@@ -31,7 +31,10 @@ export default function RoomScreen({ route }) {
     // Storing the message to the cloud firestore  
     async function handleSend(message) {
 
-         message[0].text ? text = message[0].text : image = message;
+        // message[0].text ? text = message[0].text : image = message;
+
+        const text = message[0].text ? message[0].text : message;
+
 
         const array1 = [currentUser.email, oppositeUserId]
         array1.sort()
@@ -42,7 +45,7 @@ export default function RoomScreen({ route }) {
             .doc(newId)
             .collection('Chat')
             .add({
-                image,
+                // image,
                 text,
                 createdAt: new Date().getTime(),
                 user: {

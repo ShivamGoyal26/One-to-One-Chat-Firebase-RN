@@ -24,8 +24,8 @@ export default function SignupScreen({ navigation }) {
 
   function addUser() {
     const unsubscribe = firestore()
-      .collection('Users').doc()
-      .set({
+      .collection('Users')
+      .add({
         name: name,
         createdAt: currentDate,
         email: email,
