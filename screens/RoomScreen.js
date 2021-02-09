@@ -3,6 +3,7 @@ import { StyleSheet, View, Platform, TouchableOpacity, Alert } from 'react-nativ
 import {
     GiftedChat,
     Composer,
+    Send,
 } from 'react-native-gifted-chat';
 import { AuthContext } from '../Navigation/AuthProvider';
 import firestore from '@react-native-firebase/firestore';
@@ -16,7 +17,6 @@ export default function RoomScreen({ route }) {
 
     // This is for the image 
 
-    const [image, setImage] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [fileUri, setFileUri] = useState(null);
 
@@ -31,7 +31,7 @@ export default function RoomScreen({ route }) {
     // Storing the message to the cloud firestore  
     async function handleSend(message) {
 
-        var text = message[0].text ? message[0].text : message;
+         message[0].text ? text = message[0].text : image = message;
 
         const array1 = [currentUser.email, oppositeUserId]
         array1.sort()
@@ -42,6 +42,7 @@ export default function RoomScreen({ route }) {
             .doc(newId)
             .collection('Chat')
             .add({
+                image,
                 text,
                 createdAt: new Date().getTime(),
                 user: {
@@ -90,19 +91,6 @@ export default function RoomScreen({ route }) {
         return () => messagesListener();
     }, []);
 
-    // This will help the user to select the image for the uploading 
-
-    const renderComposer = props => {
-        return (
-            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginRight: 15 }}>
-                <Composer />
-                <TouchableOpacity onPress={launch}>
-                    <Ionicons name='attach' size={35} color='#6646ee' />
-                </TouchableOpacity>
-            </View>
-        );
-    }
-
     const launch = async () => {
         let options = {
             storageOptions: {
@@ -120,9 +108,6 @@ export default function RoomScreen({ route }) {
                 alert(response.customButton);
             } else {
                 const source = { uri: response.uri };
-                console.log("this is the native output")
-                console.log(source)
-                setImage(source);
                 setFileUri(response.uri)
                 uploadImage(source)
 
@@ -142,10 +127,6 @@ export default function RoomScreen({ route }) {
     // HERE WE ARE UPLOADING THE IMAGE ON THE FIRESTORE 
 
     const uploadImage = async (data) => {
-        console.log(data)
-        console.log("this is the data inside the image")
-        console.log(image)
-        // const { uri } = image;
         const { uri } = data;
         const filename = uri.substring(uri.lastIndexOf('/') + 1)
         const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
@@ -167,27 +148,41 @@ export default function RoomScreen({ route }) {
         const url = await storage()
             .ref(filename)
             .getDownloadURL();
-
-        
-        console.log("This is the image LOCAL uri")
-        console.log(image)
-        setImage(null);
-        console.log("This is the Download uri")
-        console.log(url)
         handleSend(url)
     };
 
+    function renderSend(props) {
+        return (
+            <View style={{ flexDirection: "row" }}>
+                <TouchableOpacity onPress={launch}>
+                    <Ionicons name='attach' size={35} color='#6646ee' />
+                </TouchableOpacity>
+                <Send {...props}>
+                    <View style={styles.sendingContainer}>
+                        <Ionicons name='send' size={28} color='#6646ee' />
+                    </View>
+                </Send>
+            </View>
+        );
+    }
+
     return (
+        console.log(messages),
         <GiftedChat
+
             messages={messages}
+
             onSend={message => handleSend(message)}
-            user={{ _id: currentUser.uid }}
+            user={{
+                _id: currentUser.uid,
+                // avatar: messages.text
+            }}
             placeholder="Type a message..."
             showUserAvatar={true}
             scrollToBottom
             scrollToBottomComponent={scrollToBottomComponent}
             showAvatarForEveryMessage={true}
-            renderComposer={renderComposer}
+            renderSend={renderSend}
             alwaysShowSend
         />
 
